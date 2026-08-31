@@ -1,0 +1,12 @@
+# 실행 결과 (재생성 가능)
+output/
+
+# 비밀정보
+config/.env
+*.env
+
+# 임시
+__pycache__/
+*.pyc
+Thumbs.db
+desktop.ini
