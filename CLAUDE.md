@@ -31,10 +31,16 @@
 4. **인스타/틱톡 스크래핑 보류** — Apify 등 종량제 스크래핑은 비용/리스크
    실측 전까지 도입하지 않는다 (Phase 3 재검토 대상).
 
+## Git 워크플로우
+
+- 원격: `https://github.com/wellbody-bot/reels-automation.git` (private), 브랜치 `main`.
+- **커밋과 푸시는 항상 함께 진행한다.** git commit 후 별도로 push 여부를 확인받지 않고 바로 origin에 push한다 (2026-08-31, 사용자 확정).
+- `config\.env`는 `.gitignore`로 제외 — 절대 커밋하지 않는다.
+
 ## 경로
 
 ```
-C:\reels-automation\                  프로젝트 루트 (Git 저장소 아님 — 로컬 폴더)
+C:\reels-automation\                  프로젝트 루트 (Git 저장소, origin=wellbody-bot/reels-automation)
 ├─ reels_automation_project_plan.md   전체 Phase/Task 계획서
 ├─ scripts\youtube_trends.py          Task 1-3: 유튜브 트렌드 수집 스크립트
 ├─ scripts\run_weekly.ps1             주간 스케줄 실행용 래퍼
@@ -70,8 +76,8 @@ Windows 작업 스케줄러에 `ReelsAutomation_YoutubeTrends_Weekly` 작업이 
 3. 다음 세션에서 시작하기 좋은 작업을 우선순위 1~3개로 추천
 4. 위 내용을 `config\SESSION_LOG.md`에 **덮어쓰기**로 저장한다. 기존 내용은
    전부 삭제하고 날짜만 갱신 — 로그를 누적하지 않는다.
-5. 이 프로젝트는 Git 저장소가 아니므로 커밋 절차는 없다. 저장 후 사용자에게
-   저장 완료만 알린다.
+5. 저장 후 다른 변경사항과 함께 커밋하고, 위 "Git 워크플로우"에 따라 바로
+   push한다.
 
 **세션 시작 시**: 새 세션이 시작되어 이 CLAUDE.md를 읽는 시점에,
 `config\SESSION_LOG.md` 파일이 있는지 확인한다. 있으면 사용자가 묻기 전에 먼저
