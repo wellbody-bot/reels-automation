@@ -103,7 +103,15 @@ def fetch_video_details(youtube, video_ids: list[str]) -> list[dict]:
     return results
 
 
-def run(keywords: list[str], days: int, max_results: int, region: str, lang: str, max_duration_sec: int | None):
+def run(
+    keywords: list[str],
+    days: int,
+    max_results: int,
+    region: str,
+    lang: str,
+    max_duration_sec: int | None,
+    min_duration_sec: int | None,
+):
     api_key = load_api_key()
     youtube = build("youtube", "v3", developerKey=api_key)
 
@@ -113,7 +121,10 @@ def run(keywords: list[str], days: int, max_results: int, region: str, lang: str
 
     all_results = {}
     for keyword in keywords:
-        print(f"\n=== 키워드: {keyword} (최근 {days}일, region={region}) ===")
+        duration_note = ""
+        if min_duration_sec is not None or max_duration_sec is not None:
+            duration_note = f", 길이 {min_duration_sec or 0}~{max_duration_sec if max_duration_sec is not None else '∞'}초"
+        print(f"\n=== 키워드: {keyword} (최근 {days}일, region={region}{duration_note}) ===")
         try:
             video_ids = search_keyword(youtube, keyword, published_after, max_results, region, lang)
         except HttpError as e:
@@ -129,6 +140,8 @@ def run(keywords: list[str], days: int, max_results: int, region: str, lang: str
         details = fetch_video_details(youtube, video_ids)
         if max_duration_sec is not None:
             details = [d for d in details if d["duration_sec"] <= max_duration_sec]
+        if min_duration_sec is not None:
+            details = [d for d in details if d["duration_sec"] >= min_duration_sec]
 
         details.sort(key=lambda d: d["view_count"], reverse=True)
         all_results[keyword] = details
@@ -212,14 +225,23 @@ def parse_args():
     parser.add_argument("--keywords", type=str, help="콤마로 구분된 키워드 목록")
     parser.add_argument("--keywords-file", type=str, help="한 줄에 하나씩 키워드가 담긴 텍스트 파일 경로")
     parser.add_argument("--days", type=int, default=7, help="최근 N일 이내 게시된 영상만 (기본 7일)")
-    parser.add_argument("--max-results", type=int, default=15, help="키워드당 최대 결과 수 (기본 15, 최대 50)")
+    parser.add_argument("--max-results", type=int, default=30, help="키워드당 최대 결과 수 (기본 30, 최대 50). 길이 필터로 걸러지는 만큼 여유있게 가져옴")
     parser.add_argument("--region", type=str, default="KR", help="지역 코드 (기본 KR)")
     parser.add_argument("--lang", type=str, default="ko", help="relevanceLanguage (기본 ko)")
     parser.add_argument(
         "--max-duration-sec",
         type=int,
-        default=None,
-        help="이 길이(초) 이하 영상만 남김 (예: 180 = 쇼츠 위주로 필터링). 기본값은 필터 없음",
+        default=90,
+        help="이 길이(초) 이하 영상만 남김. 기본 90초 — 벤치마킹은 '글감'뿐 아니라 후킹/전개/CTA "
+        "구성까지 참고하는 게 목적이라, 자막카드형 1분미만 영상은 제외하고 실제 구성이 있는 "
+        "쇼츠 위주로 좁힘. 필터 끄려면 0 이하 값 대신 매우 큰 값(예: 999999)을 주면 됨",
+    )
+    parser.add_argument(
+        "--min-duration-sec",
+        type=int,
+        default=15,
+        help="이 길이(초) 이상 영상만 남김. 기본 15초 — 텍스트 한두 줄짜리 초단문 영상은 "
+        "구성 벤치마킹 가치가 낮아 제외",
     )
     parser.add_argument("--output-dir", type=str, default=str(ROOT / "output"))
     return parser.parse_args()
@@ -256,6 +278,7 @@ def main():
         region=args.region,
         lang=args.lang,
         max_duration_sec=args.max_duration_sec,
+        min_duration_sec=args.min_duration_sec,
     )
 
     json_path, csv_path, briefing_path = save_results(results, Path(args.output_dir), args.days)
