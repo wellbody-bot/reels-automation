@@ -139,7 +139,7 @@ def run(
 
         details = fetch_video_details(youtube, video_ids)
         if max_duration_sec is not None:
-            details = [d for d in details if d["duration_sec"] <= max_duration_sec]
+            details = [d for d in details if d["duration_sec"] < max_duration_sec]
         if min_duration_sec is not None:
             details = [d for d in details if d["duration_sec"] >= min_duration_sec]
 
@@ -232,15 +232,15 @@ def parse_args():
         "--max-duration-sec",
         type=int,
         default=90,
-        help="이 길이(초) 이하 영상만 남김. 기본 90초 — 벤치마킹은 '글감'뿐 아니라 후킹/전개/CTA "
-        "구성까지 참고하는 게 목적이라, 자막카드형 1분미만 영상은 제외하고 실제 구성이 있는 "
-        "쇼츠 위주로 좁힘. 필터 끄려면 0 이하 값 대신 매우 큰 값(예: 999999)을 주면 됨",
+        help="이 길이(초) 미만 영상만 남김. 기본 90초 — 벤치마킹은 '글감'뿐 아니라 후킹/전개/CTA "
+        "구성까지 참고하는 게 목적이라, 너무 긴 라이브/방송 영상은 제외하고 실제 구성이 있는 "
+        "쇼츠 위주로 좁힘. 필터 끄려면 매우 큰 값(예: 999999)을 주면 됨",
     )
     parser.add_argument(
         "--min-duration-sec",
         type=int,
-        default=15,
-        help="이 길이(초) 이상 영상만 남김. 기본 15초 — 텍스트 한두 줄짜리 초단문 영상은 "
+        default=30,
+        help="이 길이(초) 이상 영상만 남김. 기본 30초 — 자막카드형 초단문 영상은 "
         "구성 벤치마킹 가치가 낮아 제외",
     )
     parser.add_argument("--output-dir", type=str, default=str(ROOT / "output"))
